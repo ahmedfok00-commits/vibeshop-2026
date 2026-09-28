@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>VibeShop - TikTok Style Mega Store</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap');
+:root{--bg:#000;--card-bg:#121212;--accent-pink:#ff0050;--accent-cyan:#00f2fe;--text:#fff;--muted:#a0a0a0;--yellow:#ffd21f;--green:#19c98b;--line:#222}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Cairo,sans-serif;padding-bottom:70px}
+.sales-ticker{background:linear-gradient(90deg,rgba(255,0,80,.2),rgba(0,242,254,.2));border-bottom:1px solid rgba(255,255,255,.15);padding:10px 14px;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.auth-overlay{position:fixed;inset:0;background:rgba(0,0,0,.92);backdrop-filter:blur(15px);z-index:3000;display:flex;align-items:center;justify-content:center;padding:20px}
+.auth-card{width:min(400px,100%);background:var(--card-bg);border:1px solid var(--line);border-radius:24px;padding:30px 24px;text-align:center;box-shadow:0 10px 40px rgba(255,0,80,.2)}
+.auth-card h2{font-size:24px;margin:0 0 8px;background:linear-gradient(45deg,var(--accent-pink),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.topbar{position:sticky;top:0;z-index:50;background:rgba(0,0,0,.9);backdrop-filter:blur(10px);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #1a1a1a}
+.brand-container{display:flex;flex-direction:column;cursor:pointer;user-select:none}
+.brand{font-size:19px;font-weight:900;background:linear-gradient(45deg,var(--accent-pink),var(--accent-cyan));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.user-count-badge{font-size:10px;color:var(--accent-cyan);font-weight:700;margin-top:-2px}
+.balance-badge{background:#1a1a1a;border:1px solid var(--accent-pink);border-radius:20px;padding:5px 12px;font-size:13px;font-weight:800;color:var(--yellow)}
+.page{display:none;padding:12px}.page.active{display:block}
+#adminPage{position:fixed;inset:0;background:#080808;z-index:2500;overflow-y:auto;padding:20px;display:none}
+#adminPage.admin-open{display:block}
+.admin-header{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid var(--accent-pink);padding-bottom:12px;margin-bottom:20px}
+.section-title{font-size:15px;font-weight:800;margin:16px 0 10px;display:flex;align-items:center;gap:6px;color:var(--accent-cyan)}
+.feed-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:12px}
+.tiktok-card{background:var(--card-bg);border-radius:16px;overflow:hidden;border:1px solid #1e1e1e;display:flex;flex-direction:column}
+.video-thumb{width:100%;height:160px;object-fit:cover;background:#222}
+.reward-badge{position:absolute;bottom:8px;right:8px;background:var(--green);color:#000;font-size:10px;font-weight:900;padding:2px 6px;border-radius:6px;z-index:2}
+.discount-badge{position:absolute;top:8px;left:8px;background:var(--yellow);color:#000;font-size:10px;font-weight:900;padding:2px 6px;border-radius:6px;z-index:2}
+.card-details{padding:10px;display:flex;flex-direction:column;flex-grow:1}
+.card-title{font-size:12.5px;font-weight:700;margin:0 0 4px;line-height:1.3}
+.seller-info{font-size:10.5px;color:var(--accent-cyan);margin-bottom:6px;font-weight:600}
+.price-box{display:flex;align-items:baseline;gap:6px;margin-top:auto;flex-wrap:wrap}
+.current-price{font-size:14.5px;font-weight:900;color:var(--accent-pink)}
+.old-price{font-size:11px;color:var(--muted);text-decoration:line-through}
+.tiktok-buy-btn{width:100%;background:linear-gradient(90deg,var(--accent-pink),#e00045);border:none;color:#fff;padding:8px;border-radius:8px;font-weight:800;font-size:12px;margin-top:8px;cursor:pointer}
+.bottom-nav{position:fixed;bottom:0;left:0;right:0;height:60px;background:#000;border-top:1px solid #1a1a1a;display:flex;justify-content:space-around;align-items:center;z-index:100}
+.nav-item{background:none;border:none;color:var(--muted);display:flex;flex-direction:column;align-items:center;font-size:11px;font-weight:600;cursor:pointer}.nav-item.active{color:#fff}.nav-item .icon{font-size:18px}
+.panel{background:var(--card-bg);border-radius:16px;padding:20px;margin-bottom:20px;border:1px solid #222}
+input,select{width:100%;background:#1a1a1a;color:#fff;border:1px solid #333;border-radius:12px;padding:12px;margin:8px 0 16px;font-size:15px}
+.primary-btn{width:100%;background:var(--accent-cyan);color:#000;border:none;padding:12px;border-radius:12px;font-weight:800;cursor:pointer}
+.order-card{background:#1a1a1a;padding:12px;border-radius:12px;margin-bottom:10px;border-right:4px solid var(--accent-pink)}
+.toast{position:fixed;top:70px;left:50%;transform:translateX(-50%);background:var(--accent-pink);color:#fff;padding:8px 18px;border-radius:20px;font-weight:700;z-index:4000;display:none}
+.admin-card{background:#181818;border:1px solid #333;border-radius:12px;padding:14px;margin-bottom:12px}
+.admin-actions{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn-approve{background:var(--green);border:none;color:#000;padding:6px 12px;border-radius:6px;font-weight:800;cursor:pointer}
+.btn-reject{background:#ff3b30;border:none;color:#fff;padding:6px 12px;border-radius:6px;font-weight:800;cursor:pointer}
+.admin-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:15px}
+.admin-stat div{background:#151515;border:1px solid #292929;border-radius:12px;padding:12px;text-align:center}
+.admin-stat b{display:block;color:var(--accent-cyan);font-size:18px}.admin-stat span{font-size:11px;color:var(--muted)}
+.category-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 12px;margin-bottom:8px;scrollbar-width:none}
+.category-tabs::-webkit-scrollbar{display:none}
+.cat-tab{border:1px solid #2d2d35;background:#17171d;color:#ddd;border-radius:999px;padding:8px 12px;white-space:nowrap;font-weight:800;font-size:12px;cursor:pointer}
+.cat-tab.active{background:var(--accent-pink);border-color:var(--accent-pink);color:#fff}
+.category-label{display:inline-block;font-size:10px;background:#24242c;color:#bdbdc7;padding:3px 7px;border-radius:6px;margin-bottom:5px}
+</style>
+</head>
+<body>
+
+<div id="authOverlay" class="auth-overlay">
+  <div class="auth-card">
+    <h2>تسجيل الدخول 🛍️</h2>
+    <p style="color:var(--muted);font-size:14px">أدخل رقم هاتفك للبدء والتسوق</p>
+    <input id="userPhone" type="tel" placeholder="رقم الهاتف" style="text-align:center">
+    <button type="button" class="primary-btn" onclick="login()">دخول إلى المتجر 🚀</button>
+  </div>
+</div>
+
+<div id="adminPassModal" class="auth-overlay" style="display:none">
+  <div class="auth-card">
+    <h2>لوحة الإدارة 🔐</h2>
+    <p style="color:var(--muted);font-size:14px">أدخل كلمة السر للوصول إلى لوحة التحكم</p>
+    <input id="adminPassInput" type="password" placeholder="كلمة السر" style="text-align:center" autocomplete="new-password">
+    <button type="button" class="primary-btn" onclick="verifyAdminPass()" style="margin-bottom:8px">دخول</button>
+    <button type="button" class="primary-btn" onclick="closeAdminPassModal()" style="background:#333;color:#fff">إلغاء</button>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="brand-container" onclick="handleAdminTrigger()">
+    <div class="brand">VibeShop <span>🛍️</span></div>
+    <div class="user-count-badge">🌐 متجر تيك توك الرسمي (@tiktokshopin_bot)</div>
+  </div>
+  <div class="balance-badge">💰 <span id="accountBalance">0</span> ج.م</div>
+</header>
+
+<div class="sales-ticker">⚡ <span id="tickerText">تم شراء منتج بقيمة 8,000 ج.م وحصول العميل على مكافأة 2,500 ج.م رصيد!</span></div>
+<div id="toast" class="toast"></div>
+
+<section id="productsPage" class="page active">
+  <div class="section-title">🛍️ شراء وحصد المكافأة</div>
+  <div class="category-tabs" id="buyCategoryTabs">
+    <button class="cat-tab active" onclick="filterBuyCategory('الكل',this)">الكل</button>
+    <button class="cat-tab" onclick="filterBuyCategory('هواتف',this)">📱 هواتف</button>
+    <button class="cat-tab" onclick="filterBuyCategory('إلكترونيات',this)">🎧 إلكترونيات</button>
+    <button class="cat-tab" onclick="filterBuyCategory('لابتوبات',this)">💻 لابتوبات</button>
+    <button class="cat-tab" onclick="filterBuyCategory('منزل',this)">🏠 منزل</button>
+    <button class="cat-tab" onclick="filterBuyCategory('ألعاب',this)">🎮 ألعاب</button>
+    <button class="cat-tab" onclick="filterBuyCategory('سيارات',this)">🚗 سيارات</button>
+  </div>
+  <div class="feed-grid" id="cheapProductGrid"></div>
+  <div class="feed-grid" id="productGrid" style="margin-top:18px"></div>
+</section>
+
+<section id="resellPage" class="page">
+  <div class="panel">
+    <h2>📢 اعرض جهازك للبيع واكسب مكافأة ضخمة</h2>
+    <p style="color:var(--muted);font-size:13px">أضف أي منتج تريد بيعه وسيتم إرسال طلبك للإدارة عبر @tiktokshopin_bot:</p>
+    <input id="sellTitle" type="text" placeholder="اسم المنتج">
+    <select id="sellCategory">
+      <option value="إلكترونيات">إلكترونيات وإكسسوارات</option><option value="هواتف">هواتف وأجهزة ذكية</option>
+      <option value="لابتوب">لابتوبات وكمبيوتر</option><option value="أجهزة منزلية">أجهزة منزلية وكهربائية</option>
+      <option value="سيارات">مستلزمات سيارات ودراجات</option><option value="أخرى">أغراض ومتنوعات أخرى</option>
+    </select>
+    <input id="sellPrice" type="number" placeholder="السعر المطلوب (ج.م)">
+    <button type="button" class="primary-btn" onclick="sellCustomProduct()">نشر العرض وطلب الموافقة 🚀</button>
+  </div>
+</section>
+
+<section id="ordersPage" class="page">
+  <div class="panel"><h2>📦 طلباتي وعروضي والإيداعات</h2><div id="ordersList"></div></div>
+</section>
+
+<section id="depositPage" class="page">
+  <div class="panel">
+    <h2>💳 إيداع أو سحب رصيد</h2>
+    <p style="color:var(--muted);font-size:13px">اختر نوع العملية والمبلغ لإرسال الطلب عبر البوت:</p>
+    <select id="txType">
+      <option value="إيداع شحن">طلب إيداع / شحن رصيد</option>
+      <option value="سحب أرباح">طلب سحب أرباح</option>
+    </select>
+    <input id="depositInput" type="number" placeholder="أدخل المبلغ (ج.م)">
+    <button type="button" class="primary-btn" style="background:var(--yellow)" onclick="submitDepositOrWithdraw()">إرسال الطلب للإدارة ⚡</button>
+  </div>
+</section>
+
+<section id="adminPage">
+  <div class="admin-header">
+    <h2 style="margin:0;color:var(--accent-pink)">🔐 لوحة التحكم والإشراف الإداري</h2>
+    <button type="button" class="btn-reject" onclick="closeAdmin()">خروج ✖</button>
+  </div>
+  <div class="admin-stat">
+    <div><b id="adminTotal">0</b><span>إجمالي الطلبات</span></div>
+    <div><b id="adminPending">0</b><span>طلبات معلقة</span></div>
+    <div><b id="adminDeposits">0</b><span>طلبات شحن</span></div>
+  </div>
+  <div class="panel">
+    <p style="color:var(--muted);font-size:13px">إدارة طلبات الشراء والإيداعات وعروض البيع الخاصة بالمستخدمين:</p>
+    <div id="adminOrdersList"></div>
+  </div>
+</section>
+
+<nav class="bottom-nav">
+  <button id="btnNavHome" class="nav-item active" onclick="switchPage('productsPage',this)"><span class="icon">🔥</span><span>المتجر</span></button>
+  <button id="btnNavSell" class="nav-item" onclick="switchPage('resellPage',this)"><span class="icon">💼</span><span>إضافة بيع</span></button>
+  <button id="btnNavOrders" class="nav-item" onclick="switchPage('ordersPage',this)"><span class="icon">📦</span><span>طلباتي</span></button>
+  <button id="btnNavDeposit" class="nav-item" onclick="switchPage('depositPage',this)"><span class="icon">💳</span><span>الرصيد</span></button>
+</nav>
+
+<script>
+// إعدادات بوت تليجرام (@tiktokshopin_bot)
+const TG_BOT_TOKEN = '8529901387:AAH5bhfglrm9xvETOUnkxX8ttCiRbIUJQU8';
+// تم وضع الـ Chat ID الشخصي الخاص بك هنا مباشرة
+const TG_ADMIN_CHAT_ID = '8529901387'; 
+
+function sendTelegramNotification(text) {
+  const url = `https://api.telegram.org/bot${TG_BOT_TOKEN}/sendMessage?chat_id=${TG_ADMIN_CHAT_ID}&text=` + encodeURIComponent(text);
+  fetch(url).catch(err => console.log('TG Error:', err));
+}
+
+const cheapProducts=[
+{name:'سماعة بلوتوث M10 Airpods',category:'إلكترونيات',price:195,oldPrice:350,reward:100,seller:'👤 بائع: متجر_الأمل',img:'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?auto=format&fit=crop&w=500&q=80'},
+{name:'شاحن سريع 20W',category:'إلكترونيات',price:250,oldPrice:420,reward:140,seller:'👤 بائع: تكنو_شوب',img:'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?auto=format&fit=crop&w=500&q=80'},
+{name:'ساعة ذكية Smart Band 8',category:'إلكترونيات',price:480,oldPrice:700,reward:220,seller:'👤 بائع: إلكترونيات_مصر',img:'https://images.unsplash.com/photo-1575311373937-040b8e1fd5b6?auto=format&fit=crop&w=500&q=80'},
+{name:'ماكينة حلاقة Vintage T9',category:'إلكترونيات',price:650,oldPrice:900,reward:300,seller:'👤 بائع: مستلزمات_الرجال',img:'https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=500&q=80'},
+{name:'هاتف اقتصادي 128GB',category:'هواتف',price:2200,oldPrice:2800,reward:450,seller:'👤 بائع: موبايلات_مصر',img:'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=500&q=80'},
+{name:'هاتف 5G متوسط',category:'هواتف',price:4800,oldPrice:6000,reward:800,seller:'👤 بائع: فون_ستوري',img:'https://images.unsplash.com/photo-1598327105666-5b89351aff97?auto=format&fit=crop&w=500&q=80'},
+{name:'تابلت 10 بوصة',category:'هواتف',price:7200,oldPrice:8500,reward:1100,seller:'👤 بائع: سمارت_زون',img:'https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=500&q=80'},
+{name:'سماعة Noise Cancelling',category:'إلكترونيات',price:3500,oldPrice:4500,reward:650,seller:'👤 بائع: أوديو_تك',img:'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&w=500&q=80'},
+{name:'كيبورد ميكانيكي K2',category:'ألعاب',price:1800,oldPrice:2300,reward:350,seller:'👤 بائع: Gaming_Zone',img:'https://images.unsplash.com/photo-1587829741301-dc798b83add3?auto=format&fit=crop&w=500&q=80'},
+{name:'ماوس Gaming X7',category:'ألعاب',price:1200,oldPrice:1600,reward:240,seller:'👤 بائع: Game_Store',img:'https://images.unsplash.com/photo-1527814050087-3793815479db?auto=format&fit=crop&w=500&q=80'},
+{name:'مكنسة كهربائية ذكية',category:'منزل',price:5600,oldPrice:6900,reward:900,seller:'👤 بائع: بيتك_أونلاين',img:'https://images.unsplash.com/photo-1558317374-067fb5f30001?auto=format&fit=crop&w=500&q=80'},
+{name:'ماكينة قهوة منزلية',category:'منزل',price:4200,oldPrice:5200,reward:700,seller:'👤 بائع: هوم_تك',img:'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=500&q=80'}];
+
+const initialProducts=[
+{name:'iPhone 15 Pro Max 256GB',category:'هواتف',price:58000,oldPrice:65000,reward:8000,seller:'👤 بائع: أحمد_المالكي',img:'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=500&q=80'},
+{name:'Samsung S24 Ultra',category:'هواتف',price:52000,oldPrice:59000,reward:7200,seller:'👤 بائع: موبايلات_بلاس',img:'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=500&q=80'},
+{name:'لابتوب Lenovo Legion 5 i7',category:'لابتوبات',price:42000,oldPrice:50000,reward:6000,seller:'👤 بائع: لابتوب_ستوري',img:'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=500&q=80'},
+{name:'MacBook Air M2',category:'لابتوبات',price:47500,oldPrice:55000,reward:6500,seller:'👤 بائع: أبل_زون',img:'https://images.unsplash.com/photo-1517336714739-489689fd1ca8?auto=format&fit=crop&w=500&q=80'},
+{name:'شاشة Samsung OLED 65 4K',category:'إلكترونيات',price:35000,oldPrice:45000,reward:5000,seller:'👤 بائع: معرض_التكنولوجيا',img:'https://images.unsplash.com/photo-1593784991095-a205069470b6?auto=format&fit=crop&w=500&q=80'},
+{name:'PlayStation 5 Slim',category:'ألعاب',price:28500,oldPrice:33000,reward:4500,seller:'👤 بائع: Console_Hub',img:'https://images.unsplash.com/photo-1606813907291-d86efa9b94db?auto=format&fit=crop&w=500&q=80'},
+{name:'كاميرا Sony Alpha',category:'إلكترونيات',price:39000,oldPrice:45000,reward:5600,seller:'👤 بائع: Camera_Pro',img:'https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=500&q=80'},
+{name:'غسالة أوتوماتيك 10 كجم',category:'منزل',price:18500,oldPrice:22000,reward:2800,seller:'👤 بائع: هوم_ماركت',img:'https://images.unsplash.com/photo-1626806787461-102c1bfaaea1?auto=format&fit=crop&w=500&q=80'},
+{name:'ثلاجة No Frost',category:'منزل',price:26500,oldPrice:31000,reward:3900,seller:'👤 بائع: أجهزة_البيت',img:'https://images.unsplash.com/photo-1571175443880-49e1d25b2bc5?auto=format&fit=crop&w=500&q=80'},
+{name:'سيارة سيدان موديل 2020',category:'سيارات',price:450000,oldPrice:500000,reward:15000,seller:'👤 بائع: معرض_السيارات',img:'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=500&q=80'},
+{name:'سكوتر كهربائي',category:'سيارات',price:18500,oldPrice:22000,reward:3000,seller:'👤 بائع: موبيليتي_مصر',img:'https://images.unsplash.com/photo-1571068316344-75bc76f77890?auto=format&fit=crop&w=500&q=80'}];
+
+let productsData=JSON.parse(localStorage.getItem('vibeProductsData'))||initialProducts;
+let currentUserPhone=localStorage.getItem('vibePhone')||'';
+let userBalance=Number(localStorage.getItem('vibeUserBalance')||0);
+let allOrders=JSON.parse(localStorage.getItem('vibeOrders')||'[]');
+let adminClickCount=0,adminClickTimer=null;
+
+function toast(msg){
+ const t=document.getElementById('toast');t.textContent=msg;t.style.display='block';
+ clearTimeout(window.__toastTimer);window.__toastTimer=setTimeout(()=>t.style.display='none',3000);
+}
+function init(){
+ document.getElementById('authOverlay').style.display=currentUserPhone?'none':'flex';
+ renderCheapProducts();renderProducts();updateBalance();renderOrders();
+}
+function login(){
+ const phone=document.getElementById('userPhone').value.trim();
+ if(phone.length<8)return toast('يرجى إدخال رقم هاتف صحيح ❌');
+ currentUserPhone=phone;localStorage.setItem('vibePhone',phone);
+ document.getElementById('authOverlay').style.display='none';toast('مرحبًا بك في المتجر! 👋');renderOrders();
+}
+function updateBalance(){
+ document.getElementById('accountBalance').textContent=userBalance.toLocaleString('ar-EG');
+ localStorage.setItem('vibeUserBalance',userBalance);
+}
+function switchPage(pageId,btn){
+ if(document.getElementById('adminPage').classList.contains('admin-open'))closeAdmin();
+ document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+ document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+ const page=document.getElementById(pageId);if(page)page.classList.add('active');if(btn)btn.classList.add('active');
+ window.scrollTo({top:0,behavior:'smooth'});
+}
+function activeBuyCategory(){return window.__buyCategory||'الكل';}
+function filterBuyCategory(cat,btn){
+ window.__buyCategory=cat;
+ document.querySelectorAll('#buyCategoryTabs .cat-tab').forEach(b=>b.classList.remove('active'));
+ if(btn)btn.classList.add('active');
+ renderCheapProducts();renderProducts();
+}
+function productCard(p){
+ const reward=Number(p.reward||0);
+ const discount=p.oldPrice?Math.max(0,Math.round((p.oldPrice-p.price)/p.oldPrice*100)):0;
+ return `<div class="tiktok-card">
+   <div style="position:relative">
+     <img class="video-thumb" src="${p.img}" alt="${p.name}">
+     <span class="category-label">${p.category||'متنوع'}</span>
+     <span class="reward-badge">مكافأة ${reward.toLocaleString('ar-EG')} ج.م 🎁</span>
+     ${discount>0?`<span class="discount-badge">خصم ${discount}%</span>`:''}
+   </div>
+   <div class="card-details">
+     <div class="seller-info">${p.seller||'👤 بائع موثوق'}</div>
+     <h3 class="card-title">${p.name}</h3>
+     <div class="price-box"><span class="current-price">${Number(p.price).toLocaleString('ar-EG')} ج.م</span>${p.oldPrice?`<span class="old-price">${Number(p.oldPrice).toLocaleString('ar-EG')}</span>`:''}</div>
+     <button type="button" class="tiktok-buy-btn" onclick="buyProduct('${String(p.name).replace(/'/g,"\\'")}',${Number(p.price)},${reward})">شراء وحصد المكافأة 🛍️</button>
+   </div>
+ </div>`;
+}
+function renderCheapProducts(){
+ const grid=document.getElementById('cheapProductGrid'),cat=activeBuyCategory();
+ grid.innerHTML=(cat==='الكل'?cheapProducts:cheapProducts.filter(p=>p.category===cat)).map(productCard).join('');
+}
+function renderProducts(){
+ const grid=document.getElementById('productGrid'),cat=activeBuyCategory();
+ grid.innerHTML=(cat==='الكل'?productsData:productsData.filter(p=>p.category===cat)).map(productCard).join('');
+}
+function buyProduct(name,price,reward){
+ if(!currentUserPhone)return toast('سجل الدخول أولاً ❌');
+ const order={id:Date.now(),phone:currentUserPhone,type:'شراء منتج',title:name,amount:Number(price),reward:Number(reward),status:'قيد الانتظار ⏳',date:new Date().toLocaleDateString('ar-EG')};
+ allOrders.unshift(order); saveOrders(); renderOrders();
+ sendTelegramNotification(`🛒 طلب شراء جديد عبر بوت (@tiktokshopin_bot)!\n📱 الهاتف: ${currentUserPhone}\n📦 المنتج: ${name}\n💰 السعر: ${price} ج.م\n🎁 المكافأة: ${reward} ج.م`);
+ toast('تم إرسال طلب الشراء للإدارة عبر البوت! ⏳');
+}
+function sellCustomProduct(){
+ const title=document.getElementById('sellTitle').value.trim(),price=Number(document.getElementById('sellPrice').value);
+ if(!title||!price)return toast('يرجى ملء جميع البيانات ❌');
+ const reward=Math.min(Math.max(Math.round(price*.15),1000),15000);
+ const category=document.getElementById('sellCategory').value||'أخرى';
+ const order={id:Date.now(),phone:currentUserPhone,type:'عرض بيع جهاز',title,amount:price,reward,status:'قيد الانتظار ⏳',date:new Date().toLocaleDateString('ar-EG')};
+ allOrders.unshift(order); saveOrders(); renderOrders();
+ sendTelegramNotification(`📢 عرض بيع جهاز جديد عبر (@tiktokshopin_bot)!\n📱 الهاتف: ${currentUserPhone}\n🏷️ المنتج: ${title}\n💵 السعر: ${price} ج.م`);
+ document.getElementById('sellTitle').value=''; document.getElementById('sellPrice').value='';
+ toast('تم إرسال عرضك للإدارة عبر البوت 🚀'); switchPage('productsPage',document.getElementById('btnNavHome'));
+}
+function submitDepositOrWithdraw(){
+ const type=document.getElementById('txType').value;
+ const amount=Number(document.getElementById('depositInput').value);
+ if(!amount||amount<=0)return toast('يرجى إدخال مبلغ صحيح ❌');
+ const order={id:Date.now(),phone:currentUserPhone,type:type,title:`طلب ${type} بقيمة ${amount} ج.م`,amount,reward:0,status:'قيد الانتظار ⏳',date:new Date().toLocaleDateString('ar-EG')};
+ allOrders.unshift(order); saveOrders(); renderOrders();
+ sendTelegramNotification(`💳 معاملة مالية جديدة (${type}) عبر (@tiktokshopin_bot)!\n📱 الهاتف: ${currentUserPhone}\n💵 المبلغ: ${amount} ج.م`);
+ document.getElementById('depositInput').value='';
+ toast('تم إرسال الطلب بنجاح عبر البوت! ⚡');
+}
+function saveOrders(){localStorage.setItem('vibeOrders',JSON.stringify(allOrders))}
+function renderOrders(){
+ const c=document.getElementById('ordersList'),u=allOrders.filter(o=>o.phone===currentUserPhone);
+ if(!u.length){c.innerHTML='<p style="color:var(--muted);text-align:center">لا توجد طلبات حالياً</p>';return}
+ c.innerHTML=u.map(o=>`<div class="order-card"><div style="display:flex;justify-content:space-between;font-weight:800;gap:8px"><span>${o.type}: ${o.title}</span><span style="color:var(--yellow);white-space:nowrap">${Number(o.amount).toLocaleString('ar-EG')} ج.م</span></div><div style="font-size:12px;color:var(--muted);margin-top:4px">الحالة: <b style="color:#fff">${o.status}</b> | التاريخ: ${o.date}${o.reward>0?`<br><span style="color:var(--green)">المكافأة: ${Number(o.reward).toLocaleString('ar-EG')} ج.م</span>`:''}</div></div>`).join('');
+}
+function handleAdminTrigger(){
+ adminClickCount++; clearTimeout(adminClickTimer);
+ if(adminClickCount>=5){
+   adminClickCount=0; document.getElementById('adminPassModal').style.display='flex';
+   setTimeout(()=>document.getElementById('adminPassInput').focus(),100);
+   return;
+ }
+ adminClickTimer=setTimeout(()=>adminClickCount=0,1800);
+}
+function verifyAdminPass(){
+ const pass=document.getElementById('adminPassInput').value.trim();
+ if(pass==='1234'||pass==='admin'){
+   closeAdminPassModal(); openAdminPanel(); toast('تم فتح لوحة الإدارة 🔓');
+ }else toast('كلمة السر خاطئة ❌');
+}
+function closeAdminPassModal(){document.getElementById('adminPassModal').style.display='none';document.getElementById('adminPassInput').value=''}
+function openAdminPanel(){document.getElementById('adminPage').classList.add('admin-open');renderAdminOrders();document.body.style.overflow='hidden';window.scrollTo(0,0);}
+function closeAdmin(){document.getElementById('adminPage').classList.remove('admin-open');document.body.style.overflow='';}
+function renderAdminOrders(){
+ const c=document.getElementById('adminOrdersList');
+ const pending=allOrders.filter(o=>String(o.status).includes('قيد الانتظار'));
+ const deposits=allOrders.filter(o=>o.type.includes('إيداع')||o.type.includes('شحن'));
+ document.getElementById('adminTotal').textContent=allOrders.length.toLocaleString('ar-EG');
+ document.getElementById('adminPending').textContent=pending.length.toLocaleString('ar-EG');
+ document.getElementById('adminDeposits').textContent=deposits.length.toLocaleString('ar-EG');
+ if(!allOrders.length){c.innerHTML='<p style="color:var(--muted);text-align:center">لا توجد طلبات في النظام</p>';return}
+ c.innerHTML=allOrders.map(o=>`<div class="admin-card"><div style="font-weight:800;color:var(--accent-cyan)">${o.type} - ${o.phone}</div><div style="font-size:13px;margin:4px 0">التفاصيل: <b>${o.title}</b></div><div style="font-size:13px">المبلغ: <b>${Number(o.amount).toLocaleString('ar-EG')} ج.م</b> | المكافأة: <b style="color:var(--green)">${Number(o.reward||0).toLocaleString('ar-EG')} ج.م</b></div><div style="font-size:12px;color:var(--muted)">الحالة: ${o.status}</div>${String(o.status).includes('قيد الانتظار')?`<div class="admin-actions"><button type="button" class="btn-approve" onclick="approveOrder(${o.id})">قبول وتحديث الرصيد ✅</button><button type="button" class="btn-reject" onclick="rejectOrder(${o.id})">رفض الطلب ✖</button></div>`:''}</div>`).join('');
+}
+function approveOrder(id){
+ const o=allOrders.find(x=>x.id===id);if(!o)return;
+ o.status='تم التأكيد والقبول ✅';
+ if(o.phone===currentUserPhone){
+   if(o.type.includes('إيداع')||o.type.includes('شحن')) {
+     userBalance+=Number(o.amount);
+   } else if(o.type.includes('سحب')) {
+     userBalance-=Number(o.amount);
+   } else {
+     userBalance+=Number(o.reward||0);
+   }
+   updateBalance();
+ }
+ saveOrders(); renderAdminOrders(); renderOrders(); toast('تمت الموافقة وتحديث الرصيد ✅');
+}
+function rejectOrder(id){
+ const o=allOrders.find(x=>x.id===id);if(!o)return;
+ o.status='مرفوض ❌'; saveOrders(); renderAdminOrders(); renderOrders(); toast('تم رفض الطلب ❌');
+}
+window.onload=init;
+</script>
+</body>
+</html>
